@@ -6,6 +6,8 @@
   ninja,
   python3Packages,
   pkg-config,
+  validatePkgConfig,
+  testers,
   cmake,
   ncurses,
   zlib,
@@ -36,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     python3Packages.cogapp
     pkg-config
+    validatePkgConfig
     cmake
     ncurses
     zlib
@@ -46,6 +49,11 @@ stdenv.mkDerivation (finalAttrs: {
     groff
     xdg-utils
   ];
+
+passthru.tests.pkg-config = testers.hasPkgConfigModules {
+  package = finalAttrs.finalPackage;
+  versionCheck = true;
+};
 
   mesonFlags = [
     "-Dconfigdir=${placeholder "out"}/etc/xdg/qman"
