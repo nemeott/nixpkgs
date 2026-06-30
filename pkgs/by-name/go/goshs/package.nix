@@ -1,40 +1,27 @@
 {
+  lib,
+  stdenv,
   buildGoModule,
   fetchFromGitHub,
-  stdenv,
-  lib,
-  fetchpatch,
-  testers,
-
-  # passthru
-  goshs,
+  versionCheckHook,
 }:
 
 buildGoModule (finalAttrs: {
   pname = "goshs";
-  version = "2.0.3";
+  version = "2.1.3";
 
   src = fetchFromGitHub {
     owner = "patrickhener";
     repo = "goshs";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-DdGzX1qVz8mA+T9l+V2n7r6ngtV1moypT3sLO7f4OcY=";
+    hash = "sha256-bAYnwOg7CHZOKHl8pCC2IDdCkUGsw0A3e47gSuGwuig=";
   };
 
-  patches = [
-    # Fixes the build for 2.0.3
-    (fetchpatch {
-      url = "https://github.com/patrickhener/goshs/commit/dc4a86e846b5a2e6f7cc97a29a73367dea26f91a.patch";
-      hash = "sha256-yXVBxOAp37yVdI5JlFMzSuSwiUaF2gWOfy4GfBVkGSI=";
-    })
-  ];
+  vendorHash = "sha256-CAl4yYAM/GQaLbUUNjgMN6A3Vqw4D+kpG9G2WXw6mRU=";
 
-  vendorHash = "sha256-R0U/cytan8U9nE/qYHmDUlUfIYhZAcjV2v/uIlZPTCs=";
+  ldflags = [ "-s" ];
 
-  ldflags = [
-    "-s"
-    "-w"
-  ];
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
   doInstallCheck = true;
 
@@ -51,11 +38,7 @@ buildGoModule (finalAttrs: {
     "-skip=^TestGetIPv4Addr$"
   ];
 
-  passthru.tests.version = testers.testVersion {
-    package = goshs;
-    command = "goshs -v";
-    version = "goshs ${finalAttrs.version}";
-  };
+  versionCheckProgramArg = [ "-v" ];
 
   meta = {
     description = "Simple, yet feature-rich web server written in Go";

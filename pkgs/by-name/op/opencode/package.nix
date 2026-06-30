@@ -16,13 +16,16 @@
 
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "opencode";
-  version = "1.14.25";
+  version = "1.17.9";
+
+  __structuredAttrs = true;
+  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "anomalyco";
     repo = "opencode";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-v1aaq4HWAJ5wZm9bUeaRkyKr0iYjdOhigr/I31wwhEk=";
+    hash = "sha256-OWfI2dp0PeNShVZMzEdm69EtxWX7UwmyPmX02SfrjP8=";
   };
 
   node_modules = stdenvNoCC.mkDerivation {
@@ -75,7 +78,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     # NOTE: Required else we get errors that our fixed-output derivation references store paths
     dontFixup = true;
 
-    outputHash = "sha256-r0UCWhxIB4q4Te+LpXNcfexjfmI4Th2swfWOL3cUp3g=";
+    outputHash = "sha256-ERywlcNEF9EUW3JDGH8987g+GAj76RylUtegqMvStyg=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
@@ -85,7 +88,6 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     nodejs
     installShellFiles
     makeBinaryWrapper
-    models-dev
     writableTmpDirAsHomeHook
   ];
 
@@ -135,7 +137,8 @@ stdenvNoCC.mkDerivation (finalAttrs: {
            sysctl
          ]
        )
-     }
+     } \
+    --set OPENCODE_DISABLE_AUTOUPDATE true
 
     install -Dm644 config.json $out/share/opencode/config.json
     install -Dm644 tui.json $out/share/opencode/tui.json
@@ -181,20 +184,13 @@ stdenvNoCC.mkDerivation (finalAttrs: {
       delafthi
       DuskyElf
       graham33
-      superherointj
     ];
     sourceProvenance = with lib.sourceTypes; [ fromSource ];
     platforms = [
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
-      "x86_64-darwin"
     ];
     mainProgram = "opencode";
-    badPlatforms = [
-      # Broken as 2026-04-23, errors as:
-      # CPU lacks AVX support, strange crashes may occur. Reinstall Bun
-      "x86_64-darwin"
-    ];
   };
 })

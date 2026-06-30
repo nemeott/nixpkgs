@@ -20,14 +20,14 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "pydantic-ai-slim";
-  version = "1.87.0";
+  version = "2.0.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
     repo = "pydantic-ai";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Q5h+7XZ3SU1B9/kY2qBYraYrWFX3vcDFwQLld2oeQaA=";
+    hash = "sha256-4mqGRKFcQAexgccvUoZP0oDsmgfK9jzFPM1cIvWUOUA=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/pydantic_ai_slim";
@@ -54,6 +54,7 @@ buildPythonPackage (finalAttrs: {
   doCheck = false;
 
   meta = {
+    changelog = "https://github.com/pydantic/pydantic-ai/releases/tag/${finalAttrs.src.tag}";
     description = "GenAI Agent Framework, the Pydantic way";
     homepage = "https://github.com/pydantic/pydantic-ai";
     license = lib.licenses.mit;

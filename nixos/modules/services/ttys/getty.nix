@@ -13,6 +13,8 @@ let
   baseArgs = [
     "--login-program"
     "${cfg.loginProgram}"
+    "--issue-file"
+    "/etc/issue:/etc/issue.d:/run/issue:/run/issue.d"
   ]
   ++ optionals (cfg.autologinUser != null && !cfg.autologinOnce) [
     "--autologin"
@@ -131,7 +133,7 @@ in
 
   ###### implementation
 
-  config = mkIf config.console.enable {
+  config = {
     # Note: this is set here rather than up there so that changing
     # nixos.label would not rebuild manual pages
     services.getty.greetingLine = mkDefault ''<<< Welcome to ${config.system.nixos.distroName} ${config.system.nixos.label} (\m) - \l >>>'';

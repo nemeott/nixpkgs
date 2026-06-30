@@ -35,17 +35,17 @@ let
 
   hash =
     {
-      x86_64-linux = "sha256-zoe2E9xlpAME4QD8IagicbAj71g3cA9XlymQQQMFJLo=";
-      x86_64-darwin = "sha256-gKpy6+wkcO+znxLdkGMOetpVyhs3SViQyRtCc6yc5XY=";
-      aarch64-linux = "sha256-KQR6zD+3m+OgeICSs3LkWo7kC2OxqF6Xax8BRTa6QYQ=";
-      aarch64-darwin = "sha256-VZufcJ/g1LPtlQruUwI8Pe5c8LNiAIUHY5+gNnyaPTQ=";
-      armv7l-linux = "sha256-0TxKXKQppxcURimXgC40wmqMgiX3DBMJAMc+qjMQCck=";
+      x86_64-linux = "sha256-TTulHpCiT2eay2tb7e1ub164rgttBnB36Cc4JVoxf08=";
+      x86_64-darwin = "sha256-fkJGd9dSX5OZ9peHbLha43mYBeEFsyd7rLprRajc60I=";
+      aarch64-linux = "sha256-AOHmrVo5Q2iE6V/nHRniQVXfhDcL7bzBKdXfe8oZFP0=";
+      aarch64-darwin = "sha256-dMSYvcryDd8Wqu8GHwnrp5pyRJwLzpV9BDLnpyWcxG0=";
+      armv7l-linux = "sha256-L48bXLyX2dzHqcmJ752RLE8XUxrQRBLGhxdZwUO8mjw=";
     }
     .${system} or throwSystem;
 
   # Please backport all compatible updates to the stable release.
   # This is important for the extension ecosystem.
-  version = "1.116.0";
+  version = "1.125.0";
 
   # The update server (update.code.visualstudio.com) expects the version path
   # segment in X.Y.Z form, so we normalize X.Y to X.Y.0 (e.g. "1.110" → "1.110.0").
@@ -53,7 +53,7 @@ let
   downloadVersion = lib.versions.pad 3 version;
 
   # This is used for VS Code - Remote SSH test
-  rev = "560a9dba96f961efea7b1612916f89e5d5d4d679";
+  rev = "93cfdd489c3b228840d0f86ec77c3636277c93ea";
 in
 buildVscode {
   pname = "vscode" + lib.optionalString isInsiders "-insiders";
@@ -86,7 +86,7 @@ buildVscode {
     src = fetchurl {
       name = "vscode-server-${rev}.tar.gz";
       url = "https://update.code.visualstudio.com/commit:${rev}/server-linux-x64/stable";
-      hash = "sha256-HqcaLktkhw3BoEgyFwnMmP7/vuSl1OXZygrQreKeHnM=";
+      hash = "sha256-IKTCVqR+SA2nAaIGHwde6dWbcDPgp2mlXKYi9DK5mCE=";
     };
     stdenv = stdenvNoCC;
   };
@@ -113,6 +113,9 @@ buildVscode {
     '';
     homepage = "https://code.visualstudio.com/";
     downloadPage = "https://code.visualstudio.com/Updates";
+    changelog = "https://code.visualstudio.com/updates/v${
+      lib.replaceString "." "_" (lib.versions.majorMinor version)
+    }";
     license = lib.licenses.unfree;
     maintainers = with lib.maintainers; [
       eadwu

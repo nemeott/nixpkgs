@@ -185,7 +185,6 @@ let
       X86_INTEL_LPSS = yes;
       X86_INTEL_PSTATE = yes;
       X86_AMD_PSTATE = whenAtLeast "5.17" yes;
-      X86_AMD_PSTATE_DYNAMIC_EPP = whenAtLeast "7.1" yes;
       # Intel DPTF (Dynamic Platform and Thermal Framework) Support
       ACPI_DPTF = yes;
 
@@ -247,6 +246,10 @@ let
       # This check isn't super accurate but it's close enough
       HIGHMEM = option yes;
       BOUNCE = option yes;
+    };
+
+    iommu = lib.optionalAttrs stdenv.hostPlatform.isAarch64 {
+      ARM_SMMU_V3_SVA = whenAtLeast "5.9" yes;
     };
 
     memtest = {
@@ -319,14 +322,12 @@ let
       IPV6_MROUTE = yes;
       IPV6_MROUTE_MULTIPLE_TABLES = yes;
       IPV6_PIMSM_V2 = yes;
-      IPV6_FOU_TUNNEL = yes;
       IPV6_SEG6_LWTUNNEL = yes;
       IPV6_SEG6_HMAC = yes;
       IPV6_SEG6_BPF = yes;
       NET_CLS_ACT = yes;
       NET_CLS_BPF = module;
       NET_ACT_BPF = module;
-      NET_FOU = yes;
       NET_SCHED = yes;
       NET_SCH_BPF = whenAtLeast "6.16" (whenPlatformHasEBPFJit yes);
       L2TP_V3 = yes;
@@ -675,6 +676,10 @@ let
       USB_DWC3_DUAL_ROLE = yes;
 
       USB_XHCI_SIDEBAND = whenAtLeast "6.16" yes; # needed for audio offload
+
+      # The default (=y) forces us to have the XHCI firmware available in initrd,
+      # which our initrd builder can't currently do easily.
+      USB_XHCI_TEGRA = lib.mkIf stdenv.hostPlatform.isAarch64 module;
     };
 
     usb-serial = {
@@ -775,6 +780,9 @@ let
       SQUASHFS_LZ4 = yes;
       SQUASHFS_ZSTD = yes;
 
+      EROFS_FS_ZIP_DEFLATE = whenAtLeast "6.6" yes;
+      EROFS_FS_ZIP_ZSTD = whenAtLeast "6.10" yes;
+
       # Native Language Support modules, needed by some filesystems
       NLS = yes;
       NLS_DEFAULT = freeform "utf8";
@@ -788,6 +796,10 @@ let
       DEVTMPFS = yes;
 
       UNICODE = yes; # Casefolding support for filesystems
+    }
+    // lib.optionalAttrs stdenv.hostPlatform.isPower {
+      # Needed to use the installation iso image formatted for tbxi booting (ISO9660 w/ hybrid HFS+ partition).
+      HFSPLUS_FS = yes;
     };
 
     security = {
@@ -798,7 +810,9 @@ let
       FORTIFY_SOURCE = option yes;
 
       # https://googleprojectzero.blogspot.com/2019/11/bad-binder-android-in-wild-exploit.html
-      DEBUG_LIST = yes;
+      DEBUG_LIST = whenOlder "6.6" yes;
+      # https://git.kernel.org/torvalds/c/aebc7b0d8d91bbc69e976909963046bc48bca4fd
+      LIST_HARDENED = whenAtLeast "6.6" yes;
 
       HARDENED_USERCOPY = yes;
       RANDOMIZE_BASE = option yes;
@@ -865,6 +879,14 @@ let
       SHUFFLE_PAGE_ALLOCATOR = yes;
 
       INIT_ON_ALLOC_DEFAULT_ON = yes;
+
+      # Randomize kernel stack offset on syscall entry to make stack address dependent
+      # attacks harder, supported since 5.13.
+      # Only default enabled on AArch64 from 7.1 due to perf issues prior to that release
+      # that were resolved in "randomize_kstack: Maintain kstack_offset per task"
+      RANDOMIZE_KSTACK_OFFSET_DEFAULT = whenAtLeast (
+        if stdenv.hostPlatform.isAarch64 then "7.1" else "5.13"
+      ) yes;
 
       # Enable stack smashing protections in schedule()
       # See: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?h=v4.8&id=0d9e26329b0c9263d4d9e0422d80a0e73268c52f
@@ -1112,7 +1134,7 @@ let
         useZstd = stdenv.buildPlatform.is64bit;
       in
       {
-        # stdenv.hostPlatform.linux-kernel.target assumes uncompressed on RISC-V.
+        # The default target assumes uncompressed on RISC-V.
         KERNEL_UNCOMPRESSED = lib.mkIf stdenv.hostPlatform.isRiscV yes;
 
         KERNEL_XZ = lib.mkIf (
@@ -1237,6 +1259,7 @@ let
         EFI = lib.mkIf stdenv.hostPlatform.isEfi yes;
         EFI_STUB = yes; # EFI bootloader in the bzImage itself
         EFI_GENERIC_STUB_INITRD_CMDLINE_LOADER = whenOlder "6.2" yes; # initrd kernel parameter for EFI
+        PSTORE = yes;
         EFI_VARS_PSTORE = lib.mkIf (!stdenv.hostPlatform.isLoongArch64) yes;
 
         # Generic compression support for EFI payloads
@@ -1364,6 +1387,10 @@ let
         HOTPLUG_PCI_ACPI = yes; # PCI hotplug using ACPI
         HOTPLUG_PCI_PCIE = yes; # PCI-Expresscard hotplug support
 
+        # Allos PCIe devices report errors with Advanced Error Reporting (AER).
+        PCIEAER = yes;
+        ACPI_APEI_PCIEAER = yes;
+
         # Enable all available thermal governors
         THERMAL_GOV_BANG_BANG = yes;
         THERMAL_GOV_FAIR_SHARE = yes;
@@ -1393,13 +1420,10 @@ let
         DRM_AMDGPU_USERPTR = yes;
 
         # We want to prefer PREEMPT_LAZY when available, and fall back on PREEMPT_VOLUNTARY.
-        # It just so happens that kconfig asks for PREEMPT_LAZY first, so doing it like this
-        # does what we want.
-        # FIXME: This is stupid and bad.
-        # See: https://github.com/torvalds/linux/commit/7dadeaa6e851e7d67733f3e24fc53ee107781d0f
+        # The version cutoff is arbitrary, the real cutoff is somewhere around 6.13 depending on target.
         PREEMPT = no;
-        PREEMPT_LAZY = option yes;
-        PREEMPT_VOLUNTARY = option yes;
+        PREEMPT_LAZY = whenAtLeast "6.18" yes;
+        PREEMPT_VOLUNTARY = whenOlder "6.18" yes;
 
         X86_AMD_PLATFORM_DEVICE = lib.mkIf stdenv.hostPlatform.isx86 yes;
         X86_PLATFORM_DRIVERS_DELL = lib.mkIf stdenv.hostPlatform.isx86 (whenAtLeast "5.12" yes);
@@ -1600,6 +1624,12 @@ let
         # > round to working out why.  The workaround is to build it in[…].
         # > (It won't do any harm on non-Mac systems.)
         I2C_POWERMAC = yes;
+      }
+      // lib.optionalAttrs stdenv.hostPlatform.isPower {
+        # Needed for booting PowerMacs from disc
+        # (the only nice way that doesn't involve messing around with internal drives or in Open Firmware)
+        ATA = yes;
+        PATA_MACIO = yes;
       };
 
     accel = {

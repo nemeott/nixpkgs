@@ -14,6 +14,7 @@
   libxxf86vm,
   versionCheckHook,
   netbird-management,
+  netbird-proxy,
   netbird-relay,
   netbird-signal,
   netbird-ui,
@@ -62,21 +63,26 @@ let
       binaryName = "netbird-relay";
       license = lib.licenses.agpl3Only;
     };
+    proxy = {
+      module = "proxy/cmd/proxy";
+      binaryName = "netbird-proxy";
+      license = lib.licenses.agpl3Only;
+    };
   };
   component = availableComponents.${componentName};
 in
 buildGoModule (finalAttrs: {
   pname = "netbird-${componentName}";
-  version = "0.69.0";
+  version = "0.73.1";
 
   src = fetchFromGitHub {
     owner = "netbirdio";
     repo = "netbird";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-qNWzyL0J7mYQcWYQOIjmlh+KH2WBb6LkYhTNiR6tDpw=";
+    hash = "sha256-KDtu29DaiaQ3IdlaqNdgJWt+n853pnE2PbRnYVxpU8A=";
   };
 
-  vendorHash = "sha256-od8m149sJyfdUC0bJ1riHbgXlcX5Yc9K28LCcfWh6DE=";
+  vendorHash = "sha256-qa++ONGrFsKJTK7R6Q/9FsMfptKNK9bza32nFKosDxY=";
 
   nativeBuildInputs = [ installShellFiles ] ++ lib.optional (componentName == "ui") pkg-config;
 
@@ -93,7 +99,7 @@ buildGoModule (finalAttrs: {
   ldflags = [
     "-s"
     "-w"
-    "-X github.com/netbirdio/netbird/version.version=${finalAttrs.version}"
+    "-X github.com/netbirdio/netbird/version.version=v${finalAttrs.version}"
     "-X main.builtBy=nix"
   ];
 
@@ -149,6 +155,7 @@ buildGoModule (finalAttrs: {
         netbird-signal
         netbird-ui
         netbird-upload
+        netbird-proxy
         ;
     };
     updateScript = nix-update-script { };

@@ -94,10 +94,6 @@ buildGoModule (finalAttrs: {
 
   proxyVendor = true;
 
-  patches = [
-    ./prometheus-pr18519-fix-TestFsType.patch
-  ];
-
   outputs = [
     "out"
     "doc"
@@ -198,6 +194,10 @@ buildGoModule (finalAttrs: {
   checkFlags = [
     # Skip for issue during TSDB compaction
     "-skip=TestBlockRanges"
+    # both are flaky and might fail when the builder is under load
+    # https://github.com/prometheus/prometheus/issues/16450
+    "-skip=TestDelayedCompaction"
+    "-skip=TestHeadCompactionWhileScraping"
   ]
   ++ lib.optionals stdenv.hostPlatform.isAarch64 [
     "-skip=TestEvaluations/testdata/aggregators.test"
