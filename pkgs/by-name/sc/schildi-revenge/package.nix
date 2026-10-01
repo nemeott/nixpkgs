@@ -2,7 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  gradle,
+  gradle_9,
   nix-update-script,
   libGL,
   jdk21,
@@ -14,44 +14,50 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "schildi-revenge";
-  version = "26.06.06";
+  version = "26.09.12";
 
   src = fetchFromGitHub {
     owner = "SchildiChat";
     repo = "schildi-revenge";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-bj2pSS+kUAs800c/OyK4fIrckB/hAWV3Iypwei8P/W4=";
+    hash = "sha256-8bI2cysknSHohBJky17rHPV+BO3bsTM1rjbTIRRmUQQ=";
     fetchSubmodules = true;
   };
 
   cargoRoot = "matrix-rust-sdk";
   cargoDeps = rustPlatform.fetchCargoVendor {
     inherit (finalAttrs) src cargoRoot;
-    hash = "sha256-ZUMX6Y2kT0CEUFVcn8fAlxoCnQT5ipAi5YqZ3Geet4A=";
+    hash = "sha256-cR+0Y13VJgevuwz7LlhQuLuRx50FYycj0dUnrOCgAbk=";
   };
 
   nativeBuildInputs = [
     jdk21
-    gradle
+    gradle_9
     git
     cargo
     rustc
     rustPlatform.cargoSetupHook
   ];
+  #broken entry unused entry in Cargo.toml, can probably be removed with next update
+  postUnpack = ''
+    substituteInPlace ./source/matrix-rust-sdk/Cargo.toml --replace-fail \
+      "ruma = { git = \"https://github.com/matrix-org/ruma\", rev = \"bf21677a8fcba04fd01e341809eb5991908441a2\" }" \
+      ""
+  '';
 
   gradleBuildTask = "createReleaseDistributable";
 
   gradleUpdateScript = ''
     runHook preBuild
 
-    gradle composeApp:dependencies composeApp:checkRuntime --write-verification-metadata sha256
+    gradle composeApp:dependencies composeApp:checkRuntime composeApp:kspCommonMainKotlinMetadata --write-verification-metadata sha256
     ##### Fallback
     ## If the update script starts missing dependencies after an update this should still work.
     ## Unfortunately it also unnecessarily builds the entire rust crate
     #gradle createReleaseDistributable --write-verification-metadata sha256
   '';
 
-  mitmCache = gradle.fetchDeps {
+  mitmCache = gradle_9.fetchDeps {
     pkg = finalAttrs.finalPackage;
     data = ./deps.json;
   };

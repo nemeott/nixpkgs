@@ -13,13 +13,13 @@
 
 postgresqlBuildExtension (finalAttrs: {
   pname = "timescaledb${lib.optionalString (!enableUnfree) "-apache"}";
-  version = "2.28.0";
+  version = "2.30.2";
 
   src = fetchFromGitHub {
     owner = "timescale";
     repo = "timescaledb";
     tag = finalAttrs.version;
-    hash = "sha256-/m1B74kvYzYElFFP8AgEjhqWNRkNy0/hponuSY09tgs=";
+    hash = "sha256-fQi4Y78yXmebVLDGcJBMD8TgM7WWUlaFUZXoX4wI4dM=";
   };
 
   nativeBuildInputs = [ cmake ];
@@ -102,10 +102,10 @@ postgresqlBuildExtension (finalAttrs: {
     platforms = postgresql.meta.platforms;
     license = with lib.licenses; if enableUnfree then tsl else asl20;
     broken =
-      lib.versionOlder postgresql.version "15"
+      lib.versionOlder postgresql.version "16"
       ||
         # Check after next package update.
-        lib.warnIf (finalAttrs.version != "2.28.0") "Is postgresql19Packages.timescaledb still broken?" (
+        lib.warnIf (finalAttrs.version != "2.30.2") "Is postgresql19Packages.timescaledb still broken?" (
           lib.versionAtLeast postgresql.version "19"
         );
   };

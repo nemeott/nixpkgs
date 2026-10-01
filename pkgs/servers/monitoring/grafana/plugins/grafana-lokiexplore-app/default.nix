@@ -2,8 +2,8 @@
 
 grafanaPlugin {
   pname = "grafana-lokiexplore-app";
-  version = "2.1.5";
-  zipHash = "sha256-n5bZnLBgOUcUuZigVdYX9Fsp5NczFsAiHvxwfoz43f4=";
+  version = "2.6.0";
+  zipHash = "sha256-G05EoSVBC/w3c6q3CKT23y3I3bQuogTHbAtgCBGcr8M=";
   meta = {
     description = "Browse Loki logs without the need for writing complex queries";
     license = lib.licenses.agpl3Only;

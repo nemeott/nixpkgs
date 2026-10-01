@@ -8,22 +8,25 @@
   uv-dynamic-versioning,
 
   # dependencies
-  httpx,
+  anyio,
   logfire-api,
   pydantic,
   typing-inspection,
 }:
 
+# Update together with pydantic-ai-slim
+# nixpkgs-update: no auto update
+
 buildPythonPackage (finalAttrs: {
   pname = "pydantic-graph";
-  version = "2.0.0";
+  version = "2.52.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "pydantic";
     repo = "pydantic-ai";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-4mqGRKFcQAexgccvUoZP0oDsmgfK9jzFPM1cIvWUOUA=";
+    hash = "sha256-7AI/a0xwWGTl+KMNYVC3pL4AG8qfLeRbeZyd3ZsK1JA=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/pydantic_graph";
@@ -34,7 +37,7 @@ buildPythonPackage (finalAttrs: {
   ];
 
   dependencies = [
-    httpx
+    anyio
     logfire-api
     pydantic
     typing-inspection

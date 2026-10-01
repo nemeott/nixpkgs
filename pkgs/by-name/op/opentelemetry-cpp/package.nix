@@ -29,13 +29,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "opentelemetry-cpp";
-  version = "1.27.0";
+  version = "1.28.0";
 
   src = fetchFromGitHub {
     owner = "open-telemetry";
     repo = "opentelemetry-cpp";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-7G9uHMlV7/rHvD/g+ktxT6RTfDRSfsXQO7QHk26XVKs=";
+    hash = "sha256-+S/C+msuUEzOVIcx/1lEuQh6ZmyujALVXsiSqb0s2FM=";
   };
 
   patches = [
@@ -101,6 +101,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   passthru.updateScript = nix-update-script { };
 
+  # For dependents that compile the protos themselves.
+  passthru.opentelemetry-proto = opentelemetry-proto;
+
   passthru.tests = {
     # Unfortunately there is no such thing as finalAttrs.finalPackage.override,
     # so we have to resort to this.
@@ -116,7 +119,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "OpenTelemetry C++ Client Library";
     homepage = "https://github.com/open-telemetry/opentelemetry-cpp";
-    license = [ lib.licenses.asl20 ];
+    license = lib.licenses.asl20;
     maintainers = with lib.maintainers; [
       jfroche
       panicgh

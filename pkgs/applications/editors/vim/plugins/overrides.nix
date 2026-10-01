@@ -14,15 +14,20 @@
   yarnConfigHook,
   python3,
   # Misc dependencies
+  notmuch,
+  file,
   charm-freeze,
   code-minimap,
   dailies,
   dasht,
   deno,
+  distant,
   direnv,
   fzf,
+  fzy,
   gawk,
   git,
+  glow,
   helm-ls,
   himalaya,
   htop,
@@ -30,7 +35,9 @@
   khard,
   kulala-core,
   languagetool,
+  llm-ls,
   libgit2,
+  manix,
   llvmPackages,
   neovim-unwrapped,
   nix,
@@ -40,12 +47,14 @@
   openssl,
   ranger,
   ripgrep,
+  slang-server,
   sqlite,
   sshfs,
+  sops,
   stylish-haskell,
   tabnine,
   tmux,
-  typescript,
+  typescript_7,
   typescript-language-server,
   vim,
   which,
@@ -55,6 +64,7 @@
   xwininfo,
   xxd,
   ycmd,
+  yq,
   zenity,
   zoxide,
   zsh,
@@ -349,13 +359,6 @@ assertNoAdditions {
   bclose-vim = super.bclose-vim.overrideAttrs (old: {
     meta = old.meta // {
       license = lib.licenses.cc-by-sa-30;
-    };
-  });
-
-  bitbake = super.bitbake.overrideAttrs (old: {
-    sourceRoot = "source/contrib/vim";
-    meta = old.meta // {
-      license = lib.licenses.gpl2Only;
     };
   });
 
@@ -894,6 +897,12 @@ assertNoAdditions {
     };
   });
 
+  cocci-syntax = super.cocci-syntax.overrideAttrs (old: {
+    meta = old.meta // {
+      license = lib.licenses.vim;
+    };
+  });
+
   codecompanion-history-nvim = super.codecompanion-history-nvim.overrideAttrs {
     dependencies = with self; [
       # transitive dependency for codecompanion-nvim
@@ -935,6 +944,7 @@ assertNoAdditions {
     nvimSkipModules = [
       "repro_blink"
       "repro_cmp"
+      "repro_native_completion"
     ];
   };
 
@@ -1020,6 +1030,20 @@ assertNoAdditions {
         url = "https://github.com/zbirenbaum/copilot-cmp/commit/06430ebf99834ebc5d86c63816e409f4cb51fe79.patch";
         sha256 = "sha256-YOJPFC+qbyURFU58tAiAqbamQLmi7ovnJGkOeOTUPH0=";
       })
+    ];
+  };
+
+  copilot-lua = super.copilot-lua.overrideAttrs {
+    # Use the packaged language server instead of the runtime installer.
+    postPatch = ''
+      substituteInPlace lua/copilot/config/server.lua \
+        --replace-fail 'custom_server_filepath = nil,' \
+        'custom_server_filepath = "${lib.getExe copilot-language-server}",'
+    '';
+
+    runtimeDeps = [
+      copilot-language-server
+      nodejs
     ];
   };
 
@@ -1354,6 +1378,10 @@ assertNoAdditions {
     '';
   });
 
+  distant-nvim = super.distant-nvim.overrideAttrs {
+    runtimeDeps = [ distant ];
+  };
+
   dotnet-nvim = super.dotnet-nvim.overrideAttrs {
     dependencies = with self; [
       telescope-nvim
@@ -1660,6 +1688,10 @@ assertNoAdditions {
       license = lib.licenses.vim;
     };
   });
+
+  glow-nvim = super.glow-nvim.overrideAttrs {
+    runtimeDeps = [ glow ];
+  };
 
   go-nvim = super.go-nvim.overrideAttrs {
     dependencies = with self; [
@@ -2004,6 +2036,14 @@ assertNoAdditions {
   });
 
   jupytext-nvim = super.jupytext-nvim.overrideAttrs (old: {
+    # `vim.health.report_*` was removed in neovim 0.11, which makes
+    # `:checkhealth jupytext` error out. Upstream is inactive and has several
+    # open PRs for this, e.g.
+    # https://github.com/GCBallesteros/jupytext.nvim/pull/40
+    postPatch = ''
+      substituteInPlace lua/jupytext/health.lua \
+        --replace-fail "vim.health.report_" "vim.health."
+    '';
     passthru = old.passthru // {
       python3Dependencies = ps: [ ps.jupytext ];
     };
@@ -2341,6 +2381,10 @@ assertNoAdditions {
     '';
   };
 
+  llm-nvim = super.llm-nvim.overrideAttrs {
+    runtimeDeps = [ llm-ls ];
+  };
+
   lsp-format-modifications-nvim = super.lsp-format-modifications-nvim.overrideAttrs {
     dependencies = [ self.plenary-nvim ];
   };
@@ -2388,6 +2432,10 @@ assertNoAdditions {
   };
 
   lualine-lsp-progress = super.lualine-lsp-progress.overrideAttrs {
+    dependencies = [ self.lualine-nvim ];
+  };
+
+  lualine-so-fancy-nvim = super.lualine-so-fancy-nvim.overrideAttrs {
     dependencies = [ self.lualine-nvim ];
   };
 
@@ -2545,6 +2593,15 @@ assertNoAdditions {
     };
   });
 
+  mesone-nvim = super.mesone-nvim.overrideAttrs {
+    dependencies = with self; [
+      plenary-nvim
+      nvim-dap
+      telescope-nvim
+      fidget-nvim
+    ];
+  };
+
   mini-nvim = super.mini-nvim.overrideAttrs {
     # reduce closure size
     postInstall = ''
@@ -2689,6 +2746,14 @@ assertNoAdditions {
       license = lib.licenses.mit;
     };
   });
+
+  neo-tree-diagnostics-nvim = super.neo-tree-diagnostics-nvim.overrideAttrs {
+    dependencies = with self; [ neo-tree-nvim ];
+    checkInputs = with self; [
+      plenary-nvim
+      nui-nvim
+    ];
+  };
 
   neo-tree-nvim = super.neo-tree-nvim.overrideAttrs {
     checkInputs = [ git ];
@@ -3024,11 +3089,31 @@ assertNoAdditions {
     ];
   };
 
+  neovim-fuzzy = super.neovim-fuzzy.overrideAttrs {
+    runtimeDeps = [
+      fzy
+      ripgrep
+    ];
+  };
+
+  neovim-project = super.neovim-project.overrideAttrs {
+    dependencies = with self; [
+      plenary-nvim
+      neovim-session-manager
+    ];
+  };
+
   neovim-sensible = super.neovim-sensible.overrideAttrs (old: {
     meta = old.meta // {
       license = lib.licenses.mit;
     };
   });
+
+  neovim-session-manager = super.neovim-session-manager.overrideAttrs {
+    dependencies = with self; [
+      plenary-nvim
+    ];
+  };
 
   neovim-tips = super.neovim-tips.overrideAttrs {
     dependencies = [
@@ -3084,11 +3169,43 @@ assertNoAdditions {
     dependencies = [ self.nui-nvim ];
   };
 
+  none-ls-extras-nvim = super.none-ls-extras-nvim.overrideAttrs {
+    dependencies = [ self.none-ls-nvim ];
+  };
+
   none-ls-nvim = super.none-ls-nvim.overrideAttrs {
     dependencies = [ self.plenary-nvim ];
   };
 
   NotebookNavigator-nvim = super.NotebookNavigator-nvim.overrideAttrs (old: {
+    meta = old.meta // {
+      license = lib.licenses.mit;
+    };
+  });
+
+  notmuch-nvim = super.notmuch-nvim.overrideAttrs (old: {
+    checkInputs = [
+      notmuch
+    ];
+
+    # NOTE: for best user experience, consider installing optional handlers to display attachements within neovim. For instance: [ w3m catimg mupdf-headless pandoc zip ]
+    # See https://github.com/yousefakbar/notmuch.nvim/blob/v0.4.0/lua/notmuch/handlers.lua for supported handlers.
+    runtimeDeps = [
+      file
+      notmuch
+    ];
+
+    postPatch =
+      let
+        ext = stdenv.hostPlatform.extensions.sharedLibrary;
+        notmuchLib = "${lib.getLib notmuch}/lib/libnotmuch${ext}";
+      in
+      # bash
+      ''
+        substituteInPlace lua/notmuch/cnotmuch.lua \
+          --replace-fail 'ffi.load("notmuch")' 'ffi.load("${notmuchLib}")'
+      '';
+
     meta = old.meta // {
       license = lib.licenses.mit;
     };
@@ -3302,10 +3419,18 @@ assertNoAdditions {
   };
 
   nvim-jdtls = super.nvim-jdtls.overrideAttrs (old: {
+    runtimeDeps = [ python3 ];
     meta = old.meta // {
       license = lib.licenses.gpl3Only;
     };
   });
+
+  nvim-jqx = super.nvim-jqx.overrideAttrs {
+    runtimeDeps = [
+      jq
+      yq
+    ];
+  };
 
   nvim-julia-autotest = super.nvim-julia-autotest.overrideAttrs (old: {
     meta = old.meta // {
@@ -3434,6 +3559,10 @@ assertNoAdditions {
     ];
   };
 
+  nvim-sops = super.nvim-sops.overrideAttrs {
+    runtimeDeps = [ sops ];
+  };
+
   nvim-teal-maker = super.nvim-teal-maker.overrideAttrs {
     postPatch = ''
       substituteInPlace lua/tealmaker/init.lua \
@@ -3446,7 +3575,7 @@ assertNoAdditions {
     # Optional toggleterm integration
     checkInputs = [ self.toggleterm-nvim ];
     dependencies = with self; [
-      nvim-treesitter-legacy
+      nvim-treesitter
       nvim-treesitter-parsers.c_sharp
       nvim-treesitter-parsers.go
       nvim-treesitter-parsers.haskell
@@ -3583,7 +3712,6 @@ assertNoAdditions {
       snacks-nvim
       telescope-nvim
     ];
-    dependencies = [ self.plenary-nvim ];
     nvimSkipModules = [
       # Issue reproduction file
       "minimal"
@@ -3915,10 +4043,6 @@ assertNoAdditions {
     };
   });
 
-  range-highlight-nvim = super.range-highlight-nvim.overrideAttrs {
-    dependencies = [ self.cmd-parser-nvim ];
-  };
-
   ranger-nvim = super.ranger-nvim.overrideAttrs {
     runtimeDeps = [
       ranger
@@ -4022,10 +4146,6 @@ assertNoAdditions {
     };
   });
 
-  rust-tools-nvim = super.rust-tools-nvim.overrideAttrs {
-    dependencies = [ self.nvim-lspconfig ];
-  };
-
   rustaceanvim = super.rustaceanvim.overrideAttrs {
     checkInputs = [
       # Optional integration
@@ -4095,6 +4215,14 @@ assertNoAdditions {
       license = lib.licenses.mit;
     };
   });
+
+  slang-server-nvim = super.slang-server-nvim.overrideAttrs {
+    runtimeDeps = [
+      slang-server
+    ];
+
+    dependencies = [ self.nui-nvim ];
+  };
 
   slimline-nvim = super.slimline-nvim.overrideAttrs {
     nvimSkipModules = [
@@ -4469,6 +4597,10 @@ assertNoAdditions {
     ];
   };
 
+  telescope-manix = super.telescope-manix.overrideAttrs {
+    runtimeDeps = [ manix ];
+  };
+
   telescope-media-files-nvim = super.telescope-media-files-nvim.overrideAttrs {
     dependencies = with self; [
       telescope-nvim
@@ -4562,6 +4694,13 @@ assertNoAdditions {
     };
   });
 
+  tiny-code-action-nvim = super.tiny-code-action-nvim.overrideAttrs {
+    nvimSkipModules = [
+      # test for optional previewer
+      "tiny-code-action.previewers.snacks"
+    ];
+  };
+
   tmux-complete-vim = super.tmux-complete-vim.overrideAttrs {
     # Vim plugin with optional nvim-compe lua module
     nvimSkipModules = [ "compe_tmux" ];
@@ -4619,7 +4758,7 @@ assertNoAdditions {
     postPatch = ''
       substituteInPlace lua/tsc/utils.lua --replace-fail \
       'bin_name = bin_name or "tsc"' \
-      'bin_name = bin_name or "${typescript}/bin/tsc"'
+      'bin_name = bin_name or "${typescript_7}/bin/tsc"'
     '';
 
     # Unit test
@@ -5803,22 +5942,6 @@ assertNoAdditions {
   vim-zscript = super.vim-zscript.overrideAttrs (old: {
     meta = old.meta // {
       license = lib.licenses.cc0;
-    };
-  });
-
-  vimacs = super.vimacs.overrideAttrs (old: {
-    buildPhase = ''
-      substituteInPlace bin/vim \
-        --replace-fail '/usr/bin/vim' 'vim' \
-        --replace-fail '/usr/bin/gvim' 'gvim'
-      # remove unnecessary duplicated bin wrapper script
-      rm -r plugin/vimacs
-    '';
-    meta = old.meta // {
-      description = "Vim-Improved eMACS: Emacs emulation plugin for Vim";
-      homepage = "http://algorithm.com.au/code/vimacs";
-      license = lib.licenses.gpl2Plus;
-      maintainers = with lib.maintainers; [ millerjason ];
     };
   });
 

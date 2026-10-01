@@ -22,13 +22,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "lagrange";
-  version = "1.20.8";
+  version = "1.21.2";
 
   src = fetchFromGitHub {
     owner = "skyjake";
     repo = "lagrange";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-f0LRvpu+e2KaKyTVBO9yJD9LnXRom0w/Ck5oxjF4cBU=";
+    hash = "sha256-SxAZrbtEc6mKGwNvpEqVXCpvtezvCs+l1AGH88TpPIY=";
   };
 
   nativeBuildInputs = [
@@ -77,6 +77,7 @@ stdenv.mkDerivation (finalAttrs: {
   meta = {
     description = "Beautiful Gemini Client";
     homepage = "https://gmi.skyjake.fi/lagrange/";
+    mainProgram = "lagrange";
     license = lib.licenses.bsd2;
     maintainers = with lib.maintainers; [ sikmir ];
     platforms = lib.platforms.unix;

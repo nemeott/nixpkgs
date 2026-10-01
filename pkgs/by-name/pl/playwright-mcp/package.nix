@@ -8,16 +8,17 @@
 }:
 buildNpmPackage rec {
   pname = "playwright-mcp";
-  version = "0.0.76";
+  # nixpkgs-update: no auto update
+  version = "0.0.80";
 
   src = fetchFromGitHub {
     owner = "Microsoft";
     repo = "playwright-mcp";
     tag = "v${version}";
-    hash = "sha256-0ED8MlH9ugFP+suBaKJ1WubfGq/agcMjys92RXql88s=";
+    hash = "sha256-pIePGuIxBaHqvP6QVLzGSef0uarYE+X/rs3LWZEU22U=";
   };
 
-  npmDepsHash = "sha256-cH37gqlEhJQnhtCzlQEqIHweFufbjft22z1rHXLJ/u8=";
+  npmDepsHash = "sha256-3T4XNZSUL5sbcHmWfn9Dfigu635FACVEZ/EHSKYu1+8=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -32,7 +33,8 @@ buildNpmPackage rec {
 
     wrapProgram $out/bin/playwright-mcp \
       --set PLAYWRIGHT_BROWSERS_PATH ${playwright-driver.browsers} \
-      --set-default PLAYWRIGHT_MCP_BROWSER chromium
+      --set-default PLAYWRIGHT_MCP_BROWSER chromium \
+      --run 'if [ -z "$PLAYWRIGHT_MCP_USER_DATA_DIR" ]; then export PLAYWRIGHT_MCP_ISOLATED=1; fi'
   '';
 
   dontNpmBuild = true;

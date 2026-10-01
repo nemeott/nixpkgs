@@ -4,11 +4,11 @@
   removeReferencesTo,
   srcOnly,
   python3,
-  pnpm_9,
+  pnpm_10,
   fetchPnpmDeps,
   pnpmConfigHook,
   fetchFromGitHub,
-  nodejs_24,
+  nodejs_22, # TODO: move back to 24
   vips,
   pkg-config,
   nixosTests,
@@ -18,22 +18,22 @@
 }:
 
 let
-  # upstream bluesky-social/atproto uses nodejs 22+
-  nodejs = nodejs_24;
+  # upstream bluesky-social/pds uses nodejs 22+ (aims for LTS)
+  nodejs = nodejs_22;
   nodeSources = srcOnly nodejs;
   pythonEnv = python3.withPackages (p: [ p.setuptools ]);
-  pnpm = pnpm_9;
+  pnpm = pnpm_10;
 in
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "pds";
-  version = "0.4.5006";
+  version = "0.4.5034";
 
   src = fetchFromGitHub {
     owner = "bluesky-social";
     repo = "pds";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-Jb2qAB6P5KlRu4L99fcK/v0/Fspr8IFaFXuYg+PBxhM=";
+    hash = "sha256-fsbnD9y0wxXq3NmVe5vMhI613G4HlZyqsv7+DNKzZzY=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/service";
@@ -63,7 +63,7 @@ stdenv.mkDerivation (finalAttrs: {
       ;
     inherit pnpm;
     fetcherVersion = 4;
-    hash = "sha256-YfwoUkTJJ2qANqwtSWKDGfFmahAtIDNyYFwCUE72oB0=";
+    hash = "sha256-nnhtJNw/D6Tir3n6rrURjL/cw1EWocs4/r4K7Yq4Fdk=";
   };
 
   buildPhase = ''

@@ -46,8 +46,8 @@ qtModule {
 
     # backport fix recommended by KDE
     (fetchpatch {
-      url = "https://github.com/qt/qtdeclarative/commit/8a2c82be6ad90e3f2a0760d8bab1e3a8cdb2473a.diff";
-      hash = "sha256-3KbyoQPAiRyCwGnwwYV3y0yz2i6UAJcX70EPsXV0ZZM=";
+      url = "https://codereview.qt-project.org/changes/qt%2Fqtdeclarative~768697/revisions/4/patch?download&raw";
+      hash = "sha256-HiHAWbLr2MaZpw+yaA+JIveYory5cWkL2ZNf3zveYX4=";
     })
   ];
 

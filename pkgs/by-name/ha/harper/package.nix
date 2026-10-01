@@ -9,16 +9,18 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "harper";
-  version = "2.6.0";
+  version = "2.11.0";
+  __structuredAttrs = true;
+  strictDeps = true;
 
   src = fetchFromGitHub {
     owner = "Automattic";
     repo = "harper";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-jNBtpW7rhuapVES6Dj1ue9PIJOit/Gh5RflNZL32gTw=";
+    hash = "sha256-bsXHj9jJezAz22aQkQ6YN+09AxR2ASm0Al+xotIbkEQ=";
   };
 
-  cargoHash = "sha256-xJmUyyU4Okvlh7m7tDJmfoOTXUglSltt4raPAf8O3/A=";
+  cargoHash = "sha256-1scyXlOCp0hVHgHNCPxl0KUY4Q+6rsO507p5Es6rN3E=";
 
   cargoBuildFlags = [
     "--package=harper-cli"
@@ -31,8 +33,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   ];
 
   passthru = {
-    tests = vscode-extensions.elijah-potter.harper;
-    updateScript = nix-update-script { };
+    tests.vscode = vscode-extensions.elijah-potter.harper;
+    updateScript = nix-update-script {
+      extraArgs = [
+        "--subpackage"
+        "tests.vscode"
+      ];
+    };
   };
 
   nativeInstallCheckInputs = [

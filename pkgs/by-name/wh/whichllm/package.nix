@@ -7,7 +7,7 @@
 
 python3Packages.buildPythonApplication (finalAttrs: {
   pname = "whichllm";
-  version = "0.5.13";
+  version = "0.5.19";
   pyproject = true;
   __structuredAttrs = true;
 
@@ -15,7 +15,7 @@ python3Packages.buildPythonApplication (finalAttrs: {
     owner = "Andyyyy64";
     repo = "whichllm";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-54gM7ChlpWjT2L1lQkdnOttdx7TgDZf3SdXzqtRcbQs=";
+    hash = "sha256-UowI0NQiuWO+3FnPtK7uZj9h6ruPgfKyNg3SSu0mAvs=";
   };
 
   build-system = with python3Packages; [ hatchling ];

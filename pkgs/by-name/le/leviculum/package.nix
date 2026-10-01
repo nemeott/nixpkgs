@@ -10,7 +10,7 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "leviculum";
-  version = "0.7.0";
+  version = "0.9.0";
   __structuredAttrs = true;
 
   src = fetchFromGitea {
@@ -19,10 +19,10 @@ rustPlatform.buildRustPackage (finalAttrs: {
     repo = "leviculum";
     tag = "v${finalAttrs.version}";
     fetchSubmodules = false;
-    hash = "sha256-/ylHrCLs9QSTiox3/JHJtZBYLlysLsezG8iz6C1DtCI=";
+    hash = "sha256-mkYhTvareotglj03jRkcIaj0SN2IBFyioDxQN3Wuu+I=";
   };
 
-  cargoHash = "sha256-DfwN4DTWcezcDRkl27cZXQdfXIhxlAj6+2nmYXhxius=";
+  cargoHash = "sha256-0LuzJK7I4+WofgSDJZM5ggo5z5TAk7kPJsEjkO7QIHg=";
 
   nativeBuildInputs = [
     pkg-config

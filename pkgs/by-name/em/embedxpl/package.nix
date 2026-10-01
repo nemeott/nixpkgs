@@ -6,14 +6,14 @@
 
 python3.pkgs.buildPythonApplication (finalAttrs: {
   pname = "embedxpl";
-  version = "3.8.1";
+  version = "3.9.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "mrhenrike";
     repo = "EmbedXPL-Forge";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-y3Ftmqb5RnY1U2uqrq4Olyr0I0ZVJo/pgMY7RpbZqlU=";
+    hash = "sha256-J3cLMzHvrfPkzyLmX65CHqlFqM6h/Vp6sFY9bBE1eIc=";
   };
 
   __structuredAttrs = true;

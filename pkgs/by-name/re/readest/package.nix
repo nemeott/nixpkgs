@@ -23,13 +23,13 @@
 }:
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "readest";
-  version = "0.11.17";
+  version = "0.12.8";
 
   src = fetchFromGitHub {
     owner = "readest";
     repo = "readest";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-vueP/UGu1G+DnwqJ7GhcYIxIsyTeFGYIiz7Iu0fs3NA=";
+    hash = "sha256-QPYqbmj3Gn7ghGyFfnaMx5g+ogi/Zs3eL8DmmwpwUNs=";
     fetchSubmodules = true;
   };
 
@@ -45,19 +45,31 @@ rustPlatform.buildRustPackage (finalAttrs: {
   pnpmDeps = fetchPnpmDeps {
     inherit (finalAttrs) pname version src;
     pnpm = pnpm_11;
-    fetcherVersion = 3;
-    hash = "sha256-Kw3GLCPM/WeY9tQ7oAzj9PZIrX4DfudrAnYh92+5hbs=";
+    fetcherVersion = 4;
+    hash = "sha256-E6z6mXT4fO5TueLiJ03xHTM0CN3u+zXiSfdioi8R85Q=";
+    pnpmInstallFlags = [
+      # Increase number of fetch attempts to work around timeout issues on slow
+      # networks: "TimeoutError: The operation was aborted due to timeout".
+      #
+      # If this still happens on your network, consider changing some of the
+      # fetch setting and opening a pull request:
+      # https://pnpm.io/settings#request-settings
+      "--fetch-retries=5"
+    ];
   };
 
   cargoRoot = "../..";
-  cargoHash = "sha256-QxsiYl7mG+kS35pcU8/WLQA+f3gepe7qrHelhUzONbY=";
+  cargoHash = "sha256-+SDs/Da3ssM59ydJHCjr90gxYTHBYwik+mKS85ZqfCI=";
 
   buildAndTestSubdir = "src-tauri";
 
   postPatch = ''
     substituteInPlace src-tauri/tauri.conf.json \
+      --replace-fail \
+        '"beforeBuildCommand": "pnpm build && pnpm upload-sourcemaps"' \
+        '"beforeBuildCommand": "pnpm build"' \
       --replace-fail '"createUpdaterArtifacts": true' '"createUpdaterArtifacts": false' \
-      --replace-fail '"Readest"' '"readest"'
+      --replace-fail '"productName": "Readest"' '"productName": "readest"'
     jq 'del(.plugins."deep-link")' src-tauri/tauri.conf.json | sponge src-tauri/tauri.conf.json
     substituteInPlace src/services/constants.ts \
       --replace-fail "autoCheckUpdates: true" "autoCheckUpdates: false" \
@@ -118,8 +130,8 @@ rustPlatform.buildRustPackage (finalAttrs: {
     version = finalAttrs.version;
     src = "${finalAttrs.src}/apps/readest-app/src-tauri/plugins/tauri-plugin-turso";
     pnpm = pnpm_11;
-    fetcherVersion = 3;
-    hash = "sha256-RIoTkX0ivaM9EJt3fsLpZhHd2lE4ZtDnAi9syONXUus=";
+    fetcherVersion = 4;
+    hash = "sha256-quVUYsT3u4UBhuJ75QQ4SEuW8MhGQ0vGhtwtUj/eKHs=";
   };
 
   passthru.tursoPlugin = stdenv.mkDerivation {

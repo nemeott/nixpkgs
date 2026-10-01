@@ -10,14 +10,14 @@
 
 rustPlatform.buildRustPackage (finalAttrs: {
   pname = "rusthound-ce";
-  version = "2.4.9";
+  version = "2.5.14";
 
   src = fetchCrate {
     inherit (finalAttrs) pname version;
-    hash = "sha256-FG63LZX62MiSquI56WnQc9oRdzvQAaf/wGPDjSmhvow=";
+    hash = "sha256-VJFwR/iGAdNazZBEkyPfYgW9gDfPJR0xa3LhtiJ4cLg=";
   };
 
-  cargoHash = "sha256-tN7sHqEC18NQs3PrLdY71JdbL31MBh2tuaBtTN/T9vE=";
+  cargoHash = "sha256-q1NwitdAHgP6LmQ6SgKD8CnNNoyaoUha2v1edUp6Jbc=";
 
   nativeBuildInputs = [
     pkg-config

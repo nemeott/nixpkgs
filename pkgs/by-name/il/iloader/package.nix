@@ -22,13 +22,13 @@ rustPlatform.buildRustPackage (finalAttrs: {
   __structuredAttrs = true;
 
   pname = "iloader";
-  version = "2.2.6";
+  version = "2.3.3";
 
   src = fetchFromGitHub {
     owner = "nab138";
     repo = "iloader";
     rev = "v${finalAttrs.version}";
-    sha256 = "sha256-zSl08bhJ/OrdcvvL1ciybxgnLqrg4IinmcGXrsPQYyQ=";
+    sha256 = "sha256-FpWX9m5WtTYTXueKX41RP1Zhyf5UuuhrSIYITq+g+Ew=";
   };
 
   nodeModules = stdenv.mkDerivation {
@@ -64,14 +64,14 @@ rustPlatform.buildRustPackage (finalAttrs: {
       runHook postInstall
     '';
 
-    outputHash = "sha256-zB0BJrQuoIu7Y67WMfrVRsPPnJ6mhd5srL2M3zW6+1Q=";
+    outputHash = "sha256-UTNnOm1BRVuz7x8Vrxv/WL7N6Cyi8VxYusAXFpCIako=";
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
 
   cargoRoot = "src-tauri";
   buildAndTestSubdir = "src-tauri";
-  cargoHash = "sha256-6nDqIikItl5SuHN2o/iQREiOkY+bYkP7akShOEtY9JY=";
+  cargoHash = "sha256-te7XB/pkM9s94fUJadCtoOvcB/kEN/U1BwQMWcKPglM=";
 
   doCheck = false;
 
@@ -123,7 +123,6 @@ rustPlatform.buildRustPackage (finalAttrs: {
       "aarch64-linux"
       "x86_64-linux"
       "aarch64-darwin"
-      "x86_64-darwin"
     ];
   };
 })

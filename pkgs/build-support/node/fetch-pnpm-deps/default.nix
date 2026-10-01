@@ -59,11 +59,15 @@ in
 
     assert
       !(fetcherVersion == 1 || fetcherVersion == 2)
-      || throw "fetchPnpmDeps: `fetcherVersion = ${toString fetcherVersion}` was removed in the 26.11 release. Please migrate `${pname}` to `fetcherVersion = 3` and regenerate the hash. See https://nixos.org/manual/nixpkgs/stable/#javascript-pnpm-fetcherVersion.";
+      || throw "fetchPnpmDeps: `fetcherVersion = ${toString fetcherVersion}` was removed in the 26.11 release. Please migrate `${pname}` to `fetcherVersion = 4` and regenerate the hash. See https://nixos.org/manual/nixpkgs/stable/#javascript-pnpm-fetcherVersion.";
 
     assert
       builtins.elem fetcherVersion supportedFetcherVersions
       || throw "fetchPnpmDeps `fetcherVersion` is not set to a supported value (${lib.concatStringsSep ", " (map toString supportedFetcherVersions)}), see https://nixos.org/manual/nixpkgs/stable/#javascript-pnpm-fetcherVersion.";
+
+    assert
+      !(fetcherVersion == 3 && lib.versionAtLeast pnpm.version "11.0.0")
+      || throw "fetchPnpmDeps `fetcherVersion = 3` is no longer supported for `pnpm_11` or newer. Please upgrade to the latest, see https://nixos.org/manual/nixpkgs/stable/#javascript-pnpm-fetcherVersion.";
 
     stdenvNoCC.mkDerivation (
       finalAttrs:
@@ -77,6 +81,7 @@ in
             jq
             moreutils
             pnpm # from args
+            pnpm.nodejs-slim
             pnpm-fixup-state-db'
             sqlite
             writableTmpDirAsHomeHook
@@ -125,6 +130,7 @@ in
             fi
             popd
 
+            pnpm config set reporter append-only
             pnpm config set store-dir $storePath
 
             # Run any additional pnpm configuration commands that users provide.
@@ -136,13 +142,20 @@ in
 
             # pnpm is going to warn us about using --force
             # --force allows us to fetch all dependencies including ones that aren't meant for our host platform
+            local installFlagsArray=(
+              "--force"
+              "--ignore-scripts"
+              "--frozen-lockfile"
+            )
+
+            if [[ -n "$NIX_NPM_REGISTRY" ]]; then
+              installFlagsArray+=("--registry=$NIX_NPM_REGISTRY")
+            fi
+
             pnpm install \
-                --force \
-                --ignore-scripts \
                 ${lib.escapeShellArgs filterFlags} \
                 ${lib.escapeShellArgs pnpmInstallFlags} \
-                --registry="$NIX_NPM_REGISTRY" \
-                --frozen-lockfile
+                "''${installFlagsArray[@]}"
 
             # Record the fetcherVersion in the output for introspection.
             echo ${toString fetcherVersion} > $out/.fetcher-version
@@ -167,6 +180,13 @@ in
               if [[ ${toString fetcherVersion} -ge 4 ]]; then
                 sqlite3 "$storePath/v11/index.db" .dump > "$storePath/v11/index.db.sql"
                 rm "$storePath/v11/index.db"
+                ${lib.optionalString (lib.versionAtLeast sqlite.version "3.53.0") ''
+                  # SQLite 3.53.0 refactored code around the dump generation, that changed
+                  # BLOB data type representations from `X'...'` to `x'...'`, breaking existing hashes.
+                  # This change was made in http://github.com/sqlite/sqlite/commit/d2424338b05f2766034f91c03009c8f0d78bc937
+                  # and the following command reverts the dump to the old format:
+                  sed -i "s/,x'/,X'/g" "$storePath/v11/index.db.sql"
+                ''}
               fi
             fi
 

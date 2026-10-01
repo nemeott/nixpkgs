@@ -30,6 +30,9 @@ in
 stdenv.mkDerivation rec {
   inherit pname version;
 
+  __structuredAttrs = true;
+  strictDeps = true;
+
   src = srcOverride;
 
   mastodonGems = bundlerEnv {
@@ -190,7 +193,6 @@ stdenv.mkDerivation rec {
       happy-river
       erictapen
       izorkin
-      ghuntley
     ];
   };
 }

@@ -5,8 +5,10 @@
   fetchFromGitHub,
   freezegun,
   google-api-core,
+  google-auth,
   google-cloud-core,
   google-cloud-testutils,
+  grpcio,
   mock,
   proto-plus,
   protobuf,
@@ -21,14 +23,14 @@
 
 buildPythonPackage (finalAttrs: {
   pname = "google-cloud-firestore";
-  version = "2.27.0";
+  version = "2.31.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "googleapis";
     repo = "google-cloud-python";
     tag = "google-cloud-firestore-v${finalAttrs.version}";
-    hash = "sha256-hdUT4SRPOL+ArpU4RcsNCUCV3UCW3vQgwtHuxJiyZeU=";
+    hash = "sha256-kDtGHIc6UDqBomO39ZEe6fF/eZ/Ved9/0bvykVvcvag=";
   };
 
   sourceRoot = "${finalAttrs.src.name}/packages/google-cloud-firestore";
@@ -37,7 +39,9 @@ buildPythonPackage (finalAttrs: {
 
   dependencies = [
     google-api-core
+    google-auth
     google-cloud-core
+    grpcio
     proto-plus
     protobuf
   ]
@@ -70,6 +74,11 @@ buildPythonPackage (finalAttrs: {
     "tests/system/test_system_async.py"
     # Test requires credentials
     "tests/system/test_pipeline_acceptance.py"
+  ]
+  ++ lib.optionals (pythonOlder "3.14") [
+    # RuntimeError: There is no current event loop in thread 'MainThread'.
+    "tests/unit/v1/test_base_client.py::test_baseclient__emulator_channel"
+    "tests/unit/v1/test_bundle.py::TestAsyncBundle::test_async_query"
   ]
   ++ lib.optionals (pythonAtLeast "3.14") [
     # RuntimeError: There is no current event loop in thread 'MainThread'

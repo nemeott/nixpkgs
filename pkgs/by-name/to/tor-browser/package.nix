@@ -102,7 +102,7 @@ let
     ++ lib.optionals mediaSupport [ ffmpeg_7 ]
   );
 
-  version = "15.0.17";
+  version = "15.0.24";
 
   sources = {
     x86_64-linux = fetchurl {
@@ -112,7 +112,7 @@ let
         "https://tor.eff.org/dist/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
         "https://tor.calyxinstitute.org/dist/torbrowser/${version}/tor-browser-linux-x86_64-${version}.tar.xz"
       ];
-      hash = "sha256-WJFDd+DVj4oKHjv7py3yVrttrrCHFcHJbyvLNOwCjhs=";
+      hash = "sha256-sD7vtuvirLU6HWT4LJXA3wztnA+dYmWG6MbIHZgF1gQ=";
     };
 
     i686-linux = fetchurl {
@@ -122,7 +122,7 @@ let
         "https://tor.eff.org/dist/torbrowser/${version}/tor-browser-linux-i686-${version}.tar.xz"
         "https://tor.calyxinstitute.org/dist/torbrowser/${version}/tor-browser-linux-i686-${version}.tar.xz"
       ];
-      hash = "sha256-pKmAKDWutSp7ptJ66PMiS59aV+pRs3Oz9pV64kRuebI=";
+      hash = "sha256-Dusy1rVGcT31aEq4fi+YRMnAr3Kmw5YkIabb2bC3wIQ=";
     };
   };
 
@@ -167,7 +167,7 @@ stdenv.mkDerivation rec {
 
   desktopItems = [
     (makeDesktopItem {
-      name = "torbrowser";
+      name = "tor-browser";
       exec = "tor-browser %U";
       icon = "tor-browser";
       desktopName = "Tor Browser";

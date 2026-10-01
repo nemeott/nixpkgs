@@ -7,29 +7,30 @@
   rustPlatform,
   useMoldLinker,
   versionCheckHook,
-  withMold ? with clangStdenv.hostPlatform; isUnix && !isDarwin,
+  withMold ? with clangStdenv.hostPlatform; isLinux,
 }:
 let
   stdenv = if withMold then useMoldLinker clangStdenv else clangStdenv;
 in
 rustPlatform.buildRustPackage.override { inherit stdenv; } (finalAttrs: {
   pname = "pgdog";
-  version = "0.1.46";
+  version = "0.1.59";
 
   src = fetchFromGitHub {
     owner = "pgdogdev";
     repo = "pgdog";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-9NW/LL6GaiYF2p/4MoGXGRS2jv9bLi+dmRDPPNPhnVw=";
+    hash = "sha256-eFoWTm0fRnWvyANslTqLG5fw5NU+nrpevATWC747hgg=";
   };
 
-  cargoHash = "sha256-qt7CD4rTDt5DrQSSYvmheD+ib+JgM1IjbkKFKm6wXBE=";
+  cargoHash = "sha256-DGdkYGIyTyD7aNP5nr9cMsuHJR7U8QMa+ML/R/wHnnU=";
 
   # Hardcoded paths for C compiler and linker
   postPatch = ''
     rm .cargo/config.toml
   '';
 
+  env.RUSTFLAGS = "--cfg tokio_unstable";
   cargoBuildFlags = [
     "--package"
     "pgdog"

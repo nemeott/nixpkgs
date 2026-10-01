@@ -3,21 +3,22 @@
   stdenv,
   fetchurl,
   buildPackages,
+  bashNonInteractive,
   postgresql,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "tzdata";
-  version = "2026b";
+  version = "2026d";
 
   srcs = [
     (fetchurl {
       url = "https://data.iana.org/time-zones/releases/tzdata${finalAttrs.version}.tar.gz";
-      hash = "sha256-EUVD2fGaa/61vKQ2hq6hc9OHVaPbHy7sESZHrpLG9UQ=";
+      hash = "sha256-DLKqjjM8PcBJutxCoMYfIZh7jNROEH+pALrXZKrMd2c=";
     })
     (fetchurl {
       url = "https://data.iana.org/time-zones/releases/tzcode${finalAttrs.version}.tar.gz";
-      hash = "sha256-N+nthCf101IcIvxY4pPL+wQ9cO7fEAOHCzPzY/Yco0Q=";
+      hash = "sha256-L1yff+Kea4y4Y1g2Z4hLjOF7CkhTVaBUtZHGvfzYF5E=";
     })
   ];
 
@@ -34,6 +35,10 @@ stdenv.mkDerivation (finalAttrs: {
     "dev"
   ];
   propagatedBuildOutputs = [ ];
+
+  buildInputs = [ bashNonInteractive ]; # for 'tzselect'
+
+  strictDeps = true;
 
   makeFlags = [
     "TOPDIR=${placeholder "out"}"
@@ -112,6 +117,8 @@ stdenv.mkDerivation (finalAttrs: {
   # Upstream provides patches very quickly, we just need to apply them until the next
   # minor releases.
   passthru.tests = postgresql;
+
+  __structuredAttrs = true;
 
   meta = {
     homepage = "http://www.iana.org/time-zones";

@@ -1,4 +1,5 @@
-const { classify } = require('../supportedBranches.js')
+// @ts-nocheck
+import { classify } from './supportedBranches.ts'
 
 function runChecklist({
   committers,
@@ -83,7 +84,7 @@ function runChecklist({
 
   if (user) {
     checklist[
-      `${user.login} is a member of [@NixOS/nixpkgs-maintainers](https://github.com/orgs/NixOS/teams/nixpkgs-maintainers).`
+      `${user.login} is a member of [@NixOS/nixpkgs-maintainers](https://github.com/orgs/NixOS/teams/nixpkgs-maintainers) (_see [requesting a new invitation](https://github.com/NixOS/rfc39-record/blob/main/README.md#requesting-a-new-invitation)_).`
     ] = userIsMaintainer
     if (allByName) {
       // We can only determine the below, if all packages are in by-name, since
@@ -122,7 +123,7 @@ function hasMergeCommand(body) {
     .match(/^@NixOS\/nixpkgs-merge-bot merge\s*$/im)
 }
 
-async function handleMergeComment({ github, body, node_id, reaction }) {
+export async function handleMergeComment({ github, body, node_id, reaction }) {
   if (!hasMergeCommand(body)) return
 
   await github.graphql(
@@ -137,7 +138,7 @@ async function handleMergeComment({ github, body, node_id, reaction }) {
   )
 }
 
-async function handleMerge({
+export async function handleMerge({
   github,
   context,
   core,
@@ -407,9 +408,4 @@ async function handleMerge({
   // Returns a boolean, which indicates whether the PR is merge-bot eligible in principle.
   // This is used to set the respective label in bot.js.
   return result
-}
-
-module.exports = {
-  handleMerge,
-  handleMergeComment,
 }

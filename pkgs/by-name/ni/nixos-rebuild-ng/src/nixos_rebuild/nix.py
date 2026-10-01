@@ -19,15 +19,19 @@ from .models import (
     Action,
     BuildAttr,
     Flake,
+    FlakeMetadataJson,
     Generation,
     GenerationJson,
     ImageVariants,
     NixOSRebuildError,
+    NixOSVersionJson,
     Profile,
     Remote,
 )
-from .process import SSH_DEFAULT_OPTS, run_wrapper
+from .process import run_wrapper, ssh_default_opts
 from .utils import Args, dict_to_flags
+
+local_tz: Final = datetime.now().astimezone().tzinfo
 
 FLAKE_FLAGS: Final = ["--extra-experimental-features", "nix-command flakes"]
 FLAKE_REPL_TEMPLATE: Final = "repl.nix.template"
@@ -43,7 +47,9 @@ SWITCH_TO_CONFIGURATION_CMD_PREFIX: Final = [
     "NIXOS_NO_CHECK",
     "--collect",
     "--no-ask-password",
-    "--pipe",
+    "--wait",
+    "--verbose",
+    "--output=cat",
     "--quiet",
     "--service-type=exec",
     "--unit=nixos-rebuild-switch-to-configuration",
@@ -193,7 +199,7 @@ def copy_closure(
     Also supports copying a closure from a remote to another remote."""
 
     sshopts = os.getenv("NIX_SSHOPTS", "")
-    env = {"NIX_SSHOPTS": " ".join(filter(lambda x: x, [sshopts, *SSH_DEFAULT_OPTS]))}
+    env = {"NIX_SSHOPTS": " ".join(filter(lambda x: x, [sshopts, *ssh_default_opts()]))}
 
     def nix_copy_closure(host: Remote, to: bool) -> None:
         run_wrapper(
@@ -432,9 +438,10 @@ def get_generations(profile: Profile) -> list[Generation]:
     def parse_path(path: Path, profile: Profile) -> Generation:
         entry_id = path.name.split("-")[1]
         current = path.name == profile.path.readlink().name
-        timestamp = datetime.fromtimestamp(path.stat().st_ctime).strftime(
-            "%Y-%m-%d %H:%M:%S"
-        )
+        timestamp = datetime.fromtimestamp(
+            timestamp=path.stat().st_ctime,
+            tz=local_tz,
+        ).strftime("%Y-%m-%d %H:%M:%S")
 
         return Generation(
             id=int(entry_id),
@@ -505,37 +512,25 @@ def list_generations(profile: Profile) -> list[GenerationJson]:
         generation_path = (
             profile.path.parent / f"{profile.path.name}-{generation.id}-link"
         )
+
+        j: NixOSVersionJson
         try:
-            nixos_version = (generation_path / "nixos-version").read_text().strip()
-        except OSError as ex:
-            logger.debug("could not get nixos-version: %s", ex)
-            nixos_version = "Unknown"
-        try:
-            kernel_version = next(
-                (generation_path / "kernel-modules/lib/modules").iterdir()
-            ).name
-        except OSError as ex:
-            logger.debug("could not get kernel version: %s", ex)
-            kernel_version = "Unknown"
-        specialisations = [
-            s.name for s in (generation_path / "specialisation").glob("*") if s.is_dir()
-        ]
-        try:
-            configuration_revision = run_wrapper(
-                [generation_path / "sw/bin/nixos-version", "--configuration-revision"],
+            result = run_wrapper(
+                [generation_path / "sw/bin/nixos-version", "--json"],
                 capture_output=True,
-            ).stdout.strip()
-        except (OSError, CalledProcessError) as ex:
+            ).stdout
+            j = json.loads(result)
+        except (OSError, CalledProcessError, json.JSONDecodeError) as ex:
             logger.debug("could not get configuration revision: %s", ex)
-            configuration_revision = "Unknown"
+            j = {}
 
         return GenerationJson(
             generation=generation.id,
             date=generation.timestamp,
-            nixosVersion=nixos_version,
-            kernelVersion=kernel_version,
-            configurationRevision=configuration_revision,
-            specialisations=specialisations,
+            nixosVersion=j.get("nixosVersion", "Unknown"),
+            kernelVersion=j.get("kernelVersion", "Unknown"),
+            configurationRevision=j.get("configurationRevision", "Unknown"),
+            specialisations=j.get("specialisations", []),
             current=generation.current,
         )
 
@@ -576,12 +571,32 @@ def repl(build_attr: BuildAttr, nix_flags: Args | None = None) -> None:
     run_wrapper([*run_args, *dict_to_flags(nix_flags)])
 
 
+def get_flake_metadata(
+    flake: Flake, flake_flags: Args | None = None
+) -> FlakeMetadataJson:
+    r = run_wrapper(
+        [
+            "nix",
+            *FLAKE_FLAGS,
+            "flake",
+            "metadata",
+            "--json",
+            flake.resolve_path_if_exists(),
+            *dict_to_flags(flake_flags),
+        ],
+        stdout=PIPE,
+    )
+    j: FlakeMetadataJson = json.loads(r.stdout.strip())
+    return j
+
+
 def repl_flake(flake: Flake, flake_flags: Args | None = None) -> None:
     expr = Template(
         files(__package__).joinpath(FLAKE_REPL_TEMPLATE).read_text()
     ).substitute(
         flake=flake,
-        flake_path=flake.resolve_path_if_exists(),
+        # Normalize flake url to respect VSC if present:
+        flake_path=get_flake_metadata(flake, flake_flags)["resolvedUrl"],
         flake_attr=flake.attr,
         bold="\033[1m",
         blue="\033[34;1m",
@@ -665,6 +680,15 @@ def set_profile(
                 """
             ).strip()
             raise NixOSRebuildError(msg)
+
+    if profile.is_custom():
+        # Using custom profile, the target profile directory may not exist yet,
+        # so we need to create it first
+        run_wrapper(
+            ["mkdir", "-p", profile.path.parent],
+            remote=target_host,
+            elevate=elevate,
+        )
 
     run_wrapper(
         ["nix-env", "-p", profile.path, "--set", path_to_config],

@@ -7,13 +7,13 @@
 
 postgresqlBuildExtension (finalAttrs: {
   pname = "pg-safeupdate";
-  version = "1.6";
+  version = "1.7";
 
   src = fetchFromGitHub {
     owner = "eradman";
     repo = "pg-safeupdate";
     tag = finalAttrs.version;
-    hash = "sha256-xky2tlb0EoKzyIYftVr7/2BYLdinhxHjXiVO3lR57MM=";
+    hash = "sha256-V1P6gdFHwAFd4g8CrSRdRrL1wKs3bFfin8LLDNhZcUI=";
   };
 
   meta = {

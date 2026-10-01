@@ -42,13 +42,13 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "podman";
-  version = "5.8.4";
+  version = "5.8.7";
 
   src = fetchFromGitHub {
-    owner = "containers";
+    owner = "podman-container-tools";
     repo = "podman";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-zhEtMZVKiv1L72EMlwgz8sHpmvhejGp98oW63aPj+rQ=";
+    hash = "sha256-E13EjBqCK/ABVxWJSZKn6vqpYXjTqqoBR5N7YnOqURI=";
   };
 
   patches = [
@@ -200,7 +200,7 @@ buildGoModule (finalAttrs: {
 
       To install on NixOS, please use the option `virtualisation.podman.enable = true`.
     '';
-    changelog = "https://github.com/containers/podman/blob/v${finalAttrs.version}/RELEASE_NOTES.md";
+    changelog = "https://github.com/podman-container-tools/podman/blob/v${finalAttrs.version}/RELEASE_NOTES.md";
     license = lib.licenses.asl20;
     teams = [ lib.teams.podman ];
     mainProgram = "podman";

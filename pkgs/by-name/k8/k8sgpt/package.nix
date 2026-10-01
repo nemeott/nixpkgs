@@ -8,7 +8,7 @@
 
 buildGoModule (finalAttrs: {
   pname = "k8sgpt";
-  version = "0.4.34";
+  version = "0.4.39";
 
   nativeBuildInputs = [
     installShellFiles
@@ -18,10 +18,10 @@ buildGoModule (finalAttrs: {
     owner = "k8sgpt-ai";
     repo = "k8sgpt";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-EmbNlvZh6Vk4qnmOjMN0F8sqVyNF3WXSme/F4fHGHYs=";
+    hash = "sha256-wWkk6Qu385DRjdDVW143MfhRVc+KGKb20/9iFs1F0eM=";
   };
 
-  vendorHash = "sha256-tkS38PK86jp2uEWiB8eh4jQGWPirAilmgIqt1TOAPL8=";
+  vendorHash = "sha256-osPj6FfAbUI1/NpvbxiSAbFKf01D6o9IWylIFdW9ihQ=";
 
   # https://nixos.org/manual/nixpkgs/stable/#var-go-CGO_ENABLED
   env.CGO_ENABLED = 0;

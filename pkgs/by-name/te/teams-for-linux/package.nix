@@ -5,7 +5,7 @@
   fetchFromGitHub,
   alsa-utils,
   copyDesktopItems,
-  electron_41,
+  electron_43,
   libicns,
   makeDesktopItem,
   makeWrapper,
@@ -15,20 +15,20 @@
 }:
 
 let
-  electron = electron_41;
+  electron = electron_43;
 in
 buildNpmPackage rec {
   pname = "teams-for-linux";
-  version = "2.13.0";
+  version = "2.23.0";
 
   src = fetchFromGitHub {
     owner = "IsmaelMartinez";
     repo = "teams-for-linux";
     tag = "v${version}";
-    hash = "sha256-30jt23bsJ1XE2gclRg06AM+mk1IrerNnkbWVDRfjqHo=";
+    hash = "sha256-m6Dvy+nVzwhjag89hrn6MOu1rRhVuFch/hYdKDBaP+w=";
   };
 
-  npmDepsHash = "sha256-pz2htdFmczmZJtcrpI/X0nUUF++x2vtcYZiTWjEYglo=";
+  npmDepsHash = "sha256-MHGi5Vs8N+BKAu8hJtJG8RQuIcMh59ucJt2XR1HBvkc=";
 
   nativeBuildInputs = [
     makeWrapper

@@ -1,17 +1,16 @@
 {
   lib,
-  swiftPackages,
   fetchFromGitHub,
   darwin,
   actool,
   ibtool,
   makeWrapper,
   nix-update-script,
+  swift,
+  stdenv,
 }:
 
 let
-  inherit (swiftPackages) stdenv swift;
-
   masShortcutSrc = fetchFromGitHub {
     owner = "rxhanson";
     repo = "MASShortcut";
@@ -134,13 +133,13 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "rectangle";
-  version = "0.96";
+  version = "1.100";
 
   src = fetchFromGitHub {
     owner = "rxhanson";
     repo = "Rectangle";
     tag = "v${finalAttrs.version}";
-    hash = "sha256-3FDCptlNztmexfFDRD/XX9fVuEHVG+EzcrqksJeI+fo=";
+    hash = "sha256-QfOsZ7VR750zat2xuZba3/HiJ6LID2Qxc7tmW9cAgFA=";
   };
 
   nativeBuildInputs = [
@@ -306,7 +305,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://rectangleapp.com/";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [
-      FlameFlag
+      _4evy
       Intuinewin
       wegank
     ];

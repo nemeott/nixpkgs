@@ -23,14 +23,14 @@
 
 buildPythonPackage rec {
   pname = "django-vtasks";
-  version = "2.1.1";
+  version = "3.2.0";
   pyproject = true;
 
   src = fetchFromGitLab {
     owner = "glitchtip";
     repo = "django-vtasks";
     tag = "v${version}";
-    hash = "sha256-f9x6atPMYgQQ/jpCJdDj33l+mhyei+6IWi4bqqVWxU8=";
+    hash = "sha256-nxQxInYp2GW3U3iY8sfUyLO2sK/hStKeMzyHhas8Euc=";
   };
 
   postPatch = ''
@@ -74,7 +74,8 @@ buildPythonPackage rec {
     pytest-django
     pytestCheckHook
     redisTestHook # contains valkey
-  ];
+  ]
+  ++ psycopg.optional-dependencies.pool;
 
   meta = {
     description = "Very fast valkey/postgres django tasks backend";
