@@ -38,6 +38,7 @@ stdenv.mkDerivation (finalAttrs: {
     patchShebangs $out/share/cake-autorate
 
     makeWrapper $out/share/cake-autorate/cake-autorate.sh $out/bin/cake-autorate \
+      --set CAKE_AUTORATE_SCRIPT_PREFIX $out/share/cake-autorate \
       --prefix PATH : ${
         lib.makeBinPath [
           coreutils
